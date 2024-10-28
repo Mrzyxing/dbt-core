@@ -66,7 +66,7 @@ setup(
         # and check compatibility / bump in each new minor version of dbt-core.
         "colorama>=0.3.9,<0.5",
         "pathspec>=0.9,<0.12",
-        "isodate>=0.6,<0.7",
+        "isodate>=0.6,<0.8",
         # ----
         "sqlparse>=0.2.3,<0.5",
         # ----
