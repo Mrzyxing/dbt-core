@@ -39,6 +39,7 @@ from dbt.events.types import (
     LogHookStartLine,
 )
 from dbt.events.base_types import EventLevel
+from dbt.events.clog import ClogEvent
 from dbt.logger import (
     TextOnly,
     HookMetadata,
@@ -216,6 +217,25 @@ class ModelRunner(CompileRunner):
             ),
             level=level,
         )
+    def clog(self, result:RunResult):
+        try:
+            execution_time = [t['started_at'] for t in [t.to_dict(omit_none=True) for t in result.timing] if t['name'] == 'execute'][0]
+            compiled_code = result.to_dict(omit_none=True)['node']['compiled_code']
+            clog_event = ClogEvent(
+                result.status
+                ,result.execution_time
+                ,result.message
+                ,result.node.unique_id
+                ,result.node.database
+                ,result.node.schema
+                ,result.node.name
+                ,f"{result.node.database}.{result.node.schema}.{result.node.name}"
+                ,execution_time
+                ,compiled_code
+            )
+            clog_event.send()
+        except Exception as e:
+            print(e)
 
     def before_execute(self):
         self.print_start_line()
@@ -223,6 +243,8 @@ class ModelRunner(CompileRunner):
     def after_execute(self, result):
         track_model_run(self.node_index, self.num_nodes, result)
         self.print_result_line(result)
+        self.clog(result)
+
 
     def _build_run_model_result(self, model, context):
         result = context["load_result"]("main")

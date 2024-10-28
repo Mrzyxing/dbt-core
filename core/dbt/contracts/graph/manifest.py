@@ -700,7 +700,6 @@ class MacroMethods:
             )
             if filter is None or filter(candidate):
                 candidates.append(candidate)
-
         return candidates
 
 
